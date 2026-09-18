@@ -8,7 +8,7 @@ from src.analysis.text.transcription  import transcribe_audio
 from src.preprocessing.segmenter      import merge_segments, save_segments
 
 # ── Change this to your sample video path or a YouTube URL ──
-SOURCE = "data/raw_videos/video_01.mp4"   # or a YouTube link
+SOURCE = "https://youtube.com/shorts/baLpuhjXbiI?si=dHPlacNq7d5d4dIG"
 
 video    = load_video(SOURCE)
 audio    = extract_audio(video)
