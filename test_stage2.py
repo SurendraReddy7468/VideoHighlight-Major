@@ -7,8 +7,13 @@ from src.analysis.audio.pitch     import compute_pitch_variation
 from src.analysis.text.keywords   import compute_keyword_score
 from src.analysis.text.sentiment  import compute_sentiment_score
 
-AUDIO_PATH = "data/audio/video_01.wav"
+from pathlib import Path
 
+audio_files = list(Path("data/audio").glob("*.wav"))
+AUDIO_PATH = str(audio_files[0]) if audio_files else None
+if AUDIO_PATH is None:
+    raise FileNotFoundError("No .wav file found in data/audio/ — run test_stage1.py first.")
+    
 # Load segments
 with open("data/segments/segments.json", "r") as f:
     segments = json.load(f)
