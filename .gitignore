@@ -32,3 +32,5 @@ notebooks/.ipynb_checkpoints/
 # OS
 .DS_Store
 Thumbs.db
+# F1 cache
+data/analysis/

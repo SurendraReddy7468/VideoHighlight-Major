@@ -49,3 +49,6 @@ typing_extensions==4.15.0
 tzdata==2025.3
 urllib3==2.6.3
 yt-dlp==2026.3.17
+sentence-transformers==6.2.0
+pytest==9.1.1
+pyyaml==6.0.3
