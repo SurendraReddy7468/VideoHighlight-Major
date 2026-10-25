@@ -35,6 +35,7 @@ def transcribe_audio(
     result = model.transcribe(
         audio_path,
         verbose=False,
+        word_timestamps=True,
         # fp16=False forces CPU mode — remove this line if you have a CUDA GPU
         fp16=False,
     )
@@ -53,7 +54,19 @@ def transcribe_audio(
     out_path = os.path.join(output_dir, f"{base_name}_transcript.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(raw_segments, f, indent=2, ensure_ascii=False)
-
+    # Word-level timestamps (used by sentence builder and karaoke captions)
+    words = []
+    for seg in result["segments"]:
+        for w in seg.get("words", []):
+            words.append({
+                "word":  w["word"].strip(),
+                "start": round(float(w["start"]), 2),
+                "end":   round(float(w["end"]),   2),
+            })
+    words_path = os.path.join(output_dir, f"{base_name}_words.json")
+    with open(words_path, "w", encoding="utf-8") as f:
+        json.dump(words, f, indent=2, ensure_ascii=False)
+    print(f"[Transcription] 🔤 {len(words)} words → {words_path}")
     print(f"[Transcription] ✅ {len(raw_segments)} segments → {out_path}")
     return raw_segments
 
