@@ -91,23 +91,17 @@ def annotate(sentences: list) -> list:
     return sentences
 
 
-if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="utf-8")
-    name = sys.argv[1]
-    lo = float(sys.argv[2]) if len(sys.argv) > 2 else 0.0
-    hi = float(sys.argv[3]) if len(sys.argv) > 3 else 1e9
+def annotate(sentences: list) -> list:
+    """Adds is_question, dangle_start, dangle_end to each sentence dict (in place)."""
+    for s in sentences:
+        s["is_question"] = is_question(s["text"])
+        s["dangle_start"] = start_dangle_score(s["text"])
+        s["dangle_end"] = end_dangle_score(s["text"])
 
-    with open(f"data/analysis/{name}/sentences.json", encoding="utf-8") as f:
-        sents = annotate(json.load(f))
-
-    n = len(sents)
-    print(f"{name}: {n} sentences | "
-          f"dangling start (>=0.5): {sum(s['dangle_start'] >= 0.5 for s in sents)} | "
-          f"dangling end (>=0.7): {sum(s['dangle_end'] >= 0.7 for s in sents)} | "
-          f"questions: {sum(s['is_question'] for s in sents)}\n")
-
-    for s in sents:
-        if lo <= s["start"] <= hi:
-            q = "Q" if s["is_question"] else " "
-            print(f"  #{s['id']:03d} [{s['start']:6.1f}-{s['end']:6.1f}] "
-                  f"start={s['dangle_start']:.1f} end={s['dangle_end']:.1f} {q} | {s['text'][:100]}")
+    # A sentence cut by the word cap breaks a thought in two: mark both halves
+    for i, s in enumerate(sentences):
+        if s.get("forced_split"):
+            s["dangle_end"] = 1.0
+            if i + 1 < len(sentences):
+                sentences[i + 1]["dangle_start"] = 1.0
+    return sentences

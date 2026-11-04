@@ -66,3 +66,14 @@ def test_pause_after():
     s = build_sentences(words)
     assert s[0]["pause_after"] == 0.7
     assert s[1]["pause_after"] is None
+
+
+def test_forced_split_flag():
+    words = make_words([f"w{i}" for i in range(70)])
+    s = build_sentences(words)
+    assert s[0]["forced_split"] is True
+
+
+def test_normal_sentence_not_forced():
+    s = build_sentences(make_words(["Hello", "there."]))
+    assert s[0]["forced_split"] is False

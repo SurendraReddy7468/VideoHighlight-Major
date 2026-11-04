@@ -24,7 +24,7 @@ def build_sentences(words: list) -> list:
     """
     sentences, cur = [], []
 
-    def close():
+    def close(forced=False):
         if not cur:
             return
         sentences.append({
@@ -33,6 +33,7 @@ def build_sentences(words: list) -> list:
             "end": cur[-1]["end"],
             "text": " ".join(w["word"] for w in cur),
             "n_words": len(cur),
+            "forced_split": forced,
         })
         cur.clear()
 
@@ -44,9 +45,9 @@ def build_sentences(words: list) -> list:
         if _ends_sentence(w["word"]):
             close()
         elif len(cur) >= HARD_SPLIT_WORDS:
-            close()
+            close(forced=True)
         elif len(cur) >= SOFT_SPLIT_WORDS and gap >= SOFT_SPLIT_GAP:
-            close()
+            close(forced=True)
     close()
 
     for i, s in enumerate(sentences):
