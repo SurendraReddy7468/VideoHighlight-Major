@@ -50,3 +50,11 @@ def test_annotate_adds_fields():
     assert out[0]["is_question"] is True
     assert out[0]["dangle_end"] >= 0.7
     assert out[0]["dangle_start"] == 0.0
+
+def test_forced_split_marks_both_sides():
+    out = annotate([
+        {"text": "a long thought with no ending", "forced_split": True},
+        {"text": "continues here.", "forced_split": False},
+    ])
+    assert out[0]["dangle_end"] == 1.0
+    assert out[1]["dangle_start"] == 1.0

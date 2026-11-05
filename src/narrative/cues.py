@@ -81,16 +81,6 @@ def end_dangle_score(text: str) -> float:
         return 0.7
     return 0.0
 
-
-def annotate(sentences: list) -> list:
-    """Adds is_question, dangle_start, dangle_end to each sentence dict (in place)."""
-    for s in sentences:
-        s["is_question"] = is_question(s["text"])
-        s["dangle_start"] = start_dangle_score(s["text"])
-        s["dangle_end"] = end_dangle_score(s["text"])
-    return sentences
-
-
 def annotate(sentences: list) -> list:
     """Adds is_question, dangle_start, dangle_end to each sentence dict (in place)."""
     for s in sentences:
