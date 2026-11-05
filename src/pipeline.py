@@ -130,6 +130,7 @@ def run_pipeline(
 
         final_path = convert_to_vertical(
             raw_clip, final_path,
+            face_center_x=per_segment_faces[0][2],
             per_segment_faces=per_segment_faces
         )
     else:
