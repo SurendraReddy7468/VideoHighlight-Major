@@ -31,6 +31,10 @@ WIN = 3                            # sentences per window for cut strength
 W_INTRO = 0.6                      # intro greetings and outro sign-offs are not highlights
 INTRO = re.compile(r"^\s*(hello|hi|hey|welcome)\b|welcome back|welcome to", re.I)
 OUTRO = re.compile(r"thanks? for watching|thank you for watching|see you (in|on) the next|subscribe|like and share", re.I)
+W_LEADIN = 0.4                     # span starts on the answer to a question/setup just before it
+SETUP = re.compile(r"\?\s*$|you know what i (tell|say)|let me tell you|here'?s the thing|think about this", re.I)
+W_PUNCH = 0.2                      # span ends right before a short punchline / continuation
+PUNCH_WORDS = 5
 
 W_COH = 0.5                        # reward: sentences in the span stay on one topic
 W_CUT = 0.5                        # penalty: span cuts through a topic at its edges
@@ -133,6 +137,11 @@ def candidates(sents, sc, emb):
                 score -= W_INTRO
             if OUTRO.search(sents[j]["text"]):
                 score -= W_INTRO
+            if i > 0 and SETUP.search(sents[i - 1]["text"]):
+                score -= W_LEADIN
+            if (j + 1 < len(sents) and n_words(sents[j + 1]) <= PUNCH_WORDS
+                    and not REPLY_OPENER.match(sents[j + 1]["text"])):
+                score -= W_PUNCH
             if n_words(sents[i]) <= SHORT_WORDS:
                 score -= W_SHORT
             if REPLY_OPENER.match(sents[i]["text"]):
