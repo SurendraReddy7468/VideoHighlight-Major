@@ -64,7 +64,11 @@ def parse_args():
         default="final_clip",
         help="Output filename without extension (default: final_clip)",
     )
-
+    parser.add_argument(
+        "--narrative",
+        action="store_true",
+        help="Cut one continuous sentence-aligned span (F1) instead of stitching pieces",
+    )
     return parser.parse_args()
 
 
@@ -77,6 +81,7 @@ def main():
             mode=args.mode,
             video_type=args.video_type,
             whisper_model=args.whisper,
+            narrative=args.narrative,
             output_name=args.output,
         )
         print(f"✅ Success!  Open your clip: {final_path}")

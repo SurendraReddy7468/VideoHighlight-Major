@@ -77,9 +77,9 @@ def n_words(s):
 
 
 def get_embeddings(base, sents):
-    """One unit-length vector per sentence; cached in the video's folder."""
-    path = base / "embeddings.npy"
-    if path.exists():
+    """One unit-length vector per sentence; cached in the video's folder when base is given."""
+    path = (base / "embeddings.npy") if base is not None else None
+    if path is not None and path.exists():
         emb = np.load(path)
         if len(emb) == len(sents):
             return emb
@@ -87,7 +87,8 @@ def get_embeddings(base, sents):
     model = SentenceTransformer(MODEL_NAME)
     emb = model.encode([s["text"] for s in sents],
                        normalize_embeddings=True, show_progress_bar=False)
-    np.save(path, emb)
+    if path is not None:
+        np.save(path, emb)
     return emb
 
 
@@ -164,6 +165,28 @@ def select_top(cands, k=3):
                 break
     return chosen
 
+def pick_spans(sents, segs, base=None, k=3):
+    """Top-k non-overlapping spans as segment-like dicts the pipeline can cut."""
+    sc = sentence_scores(sents, segs)
+    emb = get_embeddings(base, sents)
+    out = []
+    for score, i, j, dur in select_top(candidates(sents, sc, emb), k):
+        start, end = sents[i]["start"], sents[j]["end"]
+        weight = fx = 0.0
+        for s in segs:
+            ov = min(end, s["end"]) - max(start, s["start"])
+            if ov > 0:
+                weight += ov
+                fx += ov * s.get("face_center_x", 0.5)
+        out.append({
+            "start": start,
+            "end": end,
+            "text": " ".join(s["text"] for s in sents[i:j + 1]),
+            "score": score,
+            "face_center_x": fx / weight if weight else 0.5,
+            "sentence_range": (i, j),
+        })
+    return out
 
 if __name__ == "__main__":
     video = sys.argv[1] if len(sys.argv) > 1 else "Begging_Disappear"

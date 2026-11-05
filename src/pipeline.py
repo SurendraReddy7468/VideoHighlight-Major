@@ -17,6 +17,7 @@ def run_pipeline(
     video_type: str = "podcast",
     whisper_model: str = "base",
     output_name: str = "final_clip",
+    narrative: bool = False,
 ) -> str:
     """
     Full end-to-end pipeline: video → highlight clip.
@@ -62,6 +63,26 @@ def run_pipeline(
     scored = score_segments(segments, audio_path, video_path, mode=video_type)
     save_scores(scored)
 
+    narrative_spans = None
+    if narrative:
+        if mode != "shorts":
+            print("[Narrative] only 'shorts' is supported so far; using the old selector")
+        else:
+            try:
+                from src.narrative.sentences import build_sentences
+                from src.narrative.spans import pick_spans
+                words_path = os.path.join("data", "transcripts", f"{base_name}_words.json")
+                with open(words_path, encoding="utf-8") as f:
+                    words = json.load(f)
+                sents = build_sentences(words)
+                chrono = sorted(scored, key=lambda s: s["start"])
+                narrative_spans = pick_spans(sents, chrono, k=3)
+                print(f"[Narrative] {len(narrative_spans)} candidate spans; "
+                      f"using {narrative_spans[0]['start']:.1f}-{narrative_spans[0]['end']:.1f}s")
+            except Exception as e:
+                print(f"[Narrative] failed ({e}); using the old selector")
+                narrative_spans = None
+
     # ── STEP 6: Generate raw clip ────────────────────────────
     print("\n── STEP 6/7  Generate Clip ───────────────────────────")
 
@@ -83,7 +104,7 @@ def run_pipeline(
         return raw_clip
 
     raw_clip, selected_segments = generate_clip(
-        video_path, scored,
+        video_path, narrative_spans or scored,
         mode=mode,
         output_name="raw_clip",
     )
